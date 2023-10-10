@@ -1,0 +1,68 @@
+using System;
+using NAudio.Wave;
+
+class Piano
+{
+    private static int[] firstOctave = new int[] { 261, 293, 329, 349, 392, 440, 493 }; // Частоты для первой октавы (C4 - B4)
+    private static int currentOctave = 4; // Текущая октава
+
+    static void Main()
+    {
+        Console.WriteLine("Добро пожаловать в прототипное консольное пианино!");
+        Console.WriteLine("Чтобы начать его использовать вам требуется найти на клавиатуре данные символы A, W, S, E, D, F, T, G, Y, H, U, J.");
+        Console.WriteLine("Для изменения октавы используйте клавиши F1, F2, F3, и т.д.");
+        Console.WriteLine("Для выхода нажмите Esc.");
+        Console.WriteLine();
+
+        while (true)
+        {
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Escape)
+                {
+                    break;
+                }
+                else if (key == ConsoleKey.F1 || key == ConsoleKey.F2 || key == ConsoleKey.F3)
+                {
+                    currentOctave = (int)key - (int)ConsoleKey.F1 + 1;
+                }
+                else
+                {
+                    int noteIndex = "AWSEDFTGYHUJ".IndexOf(char.ToUpper(key));
+                    if (noteIndex >= 0)
+                    {
+                        PlayNote(noteIndex);
+                        DisplayInterestingFact(noteIndex);
+                    }
+                }
+            }
+        }
+    }
+
+    static void PlayNote(int noteIndex)
+    {
+        int noteFrequency = firstOctave[noteIndex] * (int)Math.Pow(2, currentOctave - 4);
+        using (var player = new WaveOutEvent())
+        using (var sineWaveProvider = new SignalGenerator())
+        {
+            sineWaveProvider.Type = SignalGeneratorType.Sin;
+            sineWaveProvider.Frequency = noteFrequency;
+            sineWaveProvider.Amplitude = 0.25f; // Громкость
+
+            player.Init(sineWaveProvider);
+            player.Play();
+            System.Threading.Thread.Sleep(500); // Продолжительность звука в миллисекундах
+            player.Stop();
+        }
+    }
+
+    static void DisplayInterestingFact(int noteIndex)
+    {
+        if (noteIndex == 2) // Пример: играя ноту "S" (третья клавиша), выведем интересный факт
+        {
+            Console.WriteLine("Вы только что играли ноту S!");
+            Console.WriteLine("Интересный факт: Нота S соответствует ноте E4 в октаве 4.");
+       }
+    }
+}
